@@ -3,10 +3,11 @@
 #include <stdint.h>
 #include <string.h>
 
-/* left shift with rotate (why is this not in the standard library lol) */
+/* left shift with rotate (32-bit unsigned integers) */
 #define LROT32(n, x) (n << x) | (n >> 32 - x)
 
 /* F, G, H, I auxiliary function macros */
+/* TODO check this, esp operator precedence */
 #define AF(x, y, z) x & y | ~x & z
 #define AG(x, y, z) x & z | y & ~z
 #define AH(x, y, z) x ^ y ^ z
@@ -14,16 +15,20 @@
 
 
 /* a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s). */
-#define RF(a, b, c, d, xk, s, ti) a = b + (LROT32(a + AF(b, c, d) + xk + ti), s)
+#define RF(a, b, c, d, xk, s, ti) \
+    a = b + (LROT32(a + AF(b, c, d) + xk + ti), s)
 
 /* a = b + ((a + G(b,c,d) + X[k] + T[i]) <<< s). */
-#define RG
+#define RG(a, b, c, d, xk, s, ti) \
+    a = b + (LROT32((a + AG(b, c, d) + xk + ti), s)
 
 /* a = b + ((a + H(b,c,d) + X[k] + T[i]) <<< s). */
-#define RH
+#define RH(a, b, c, d, xk, s, ti) \
+    a = b + (LROT32((a + AH(b, c, d) + xk + ti), s)
 
 /* a = b + ((a + I(b,c,d) + X[k] + T[i]) <<< s). */
-#define RI
+#define RI(a, b, c, d, xk, s, ti) \
+    a = b + (LROT32((a + AI(b, c, d) + xk + ti), s)
 
 
 
@@ -91,50 +96,57 @@ int main() {
     memset(buffer + file_len + 1, 0, buffer_len - file_len - 9);
     /* TODO properly handle "the unlikely event that b is greater than 2^64" */
     /* length of the original message in bits as a little-endian uint64_t */
+
     /* TODO detect endianness lmao */
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
     /* TODO check integer conversions */
     len_append_addr = (uint64_t*) (buffer + buffer_len - 8);
     *len_append_addr = file_len * 8;
 #endif
+
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
-#error "big endian not implemented (also not sure if macros work properly)"
+#error "big endian not implemented (also macros don't work properly)"
     /* TODO big endian */
 #endif
 
     /* process message */
     /* number of blocks = buffer_len / 64 */
     /* for each block i */
+    /* TODO does this reevaluate buffer_len / 64 each time?  if so, fix.  (or
+     * maybe just fix anyway.) */
     for (i = 0; i < buffer_len / 64; i++) {
         /* copy block i into X (length is 64 bytes = 16 * 32-bit words) */
-        memcpy(op_x, i * 16, 64);
-        /* make a copy of 4 word buffer (mdbuf to mdbuf_prev */
+        /* TODO check this makes sense */
+        memcpy(op_x, buffer + i * 64, 64);
+        /* make a copy of 4 word buffer (mdbuf to mdbuf_prev) */
         memcpy(mdbuf_prev, mdbuf, 16);
 
 
         /* intentionally allowing for overflows to wrap */
+        /* ABCD is mdbuf[0] to mdbuf[3] */
+        /* maybe they should just be individual variables instead, i'll figure
+         * it out i guess */
 
         /* Round 1. */
         /* Let [abcd k s i] denote the operation
           a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s). */
         /* Do the following 16 operations. */
-        [ABCD  0  7  1]
-        
-        [DABC  1 12  2]
-        [CDAB  2 17  3]
-        [BCDA  3 22  4]
-        [ABCD  4  7  5]
-        [DABC  5 12  6]
-        [CDAB  6 17  7]
-        [BCDA  7 22  8]
-        [ABCD  8  7  9]
-        [DABC  9 12 10]
-        [CDAB 10 17 11]
-        [BCDA 11 22 12]
-        [ABCD 12  7 13]
-        [DABC 13 12 14]
-        [CDAB 14 17 15]
-        [BCDA 15 22 16]
+        mdbuf[0] mdbuf[1] mdbuf[2] mdbuf[3]   0  7  1
+        mdbuf[3] mdbuf[0] mdbuf[1] mdbuf[2]   1 12  2
+        mdbuf[2] mdbuf[3] mdbuf[0] mdbuf[1]   2 17  3
+        mdbuf[1] mdbuf[2] mdbuf[3] mdbuf[0]   3 22  4
+        mdbuf[0] mdbuf[1] mdbuf[2] mdbuf[3]   4  7  5
+        mdbuf[3] mdbuf[0] mdbuf[1] mdbuf[2]   5 12  6
+        mdbuf[2] mdbuf[3] mdbuf[0] mdbuf[1]   6 17  7
+        mdbuf[1] mdbuf[2] mdbuf[3] mdbuf[0]   7 22  8
+        mdbuf[0] mdbuf[1] mdbuf[2] mdbuf[3]   8  7  9
+        mdbuf[3] mdbuf[0] mdbuf[1] mdbuf[2]   9 12 10
+        mdbuf[2] mdbuf[3] mdbuf[0] mdbuf[1]  10 17 11
+        mdbuf[1] mdbuf[2] mdbuf[3] mdbuf[0]  11 22 12
+        mdbuf[0] mdbuf[1] mdbuf[2] mdbuf[3]  12  7 13
+        mdbuf[3] mdbuf[0] mdbuf[1] mdbuf[2]  13 12 14
+        mdbuf[2] mdbuf[3] mdbuf[0] mdbuf[1]  14 17 15
+        mdbuf[1] mdbuf[2] mdbuf[3] mdbuf[0]  15 22 16
 
         /* Round 2. */
         /* Let [abcd k s i] denote the operation
@@ -158,7 +170,7 @@ int main() {
         [BCDA 12 20 32]
 
         /* Round 3. */
-        /* Let [abcd k s t] denote the operation
+        /* Let [abcd k s i] denote the operation
           a = b + ((a + H(b,c,d) + X[k] + T[i]) <<< s). */
         /* Do the following 16 operations. */
         [ABCD  5  4 33]
@@ -179,7 +191,7 @@ int main() {
         [BCDA  2 23 48]
 
         /* Round 4. */
-        /* Let [abcd k s t] denote the operation
+        /* Let [abcd k s i] denote the operation
           a = b + ((a + I(b,c,d) + X[k] + T[i]) <<< s). */
         /* Do the following 16 operations. */
         [ABCD  0  6 49]
