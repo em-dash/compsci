@@ -7,15 +7,16 @@
 
 /* left shift with rotate (32-bit unsigned integers) */
 /* x is always less than 32 */
- #define LROT32(n, x) ((n << x) | (n >> (32 - x)))
+/* TODO it's maybe bad that this does the operation twice for each n here
+ * (apparently the compiler figured this out which is pretty neat but still
+ * maybe fix it) */
+#define LROT32(n, x) ((n << x) | (n >> (32 - x)))
 
 /* F, G, H, I auxiliary function macros */
-/* TODO check this, esp operator precedence */
 #define AF(x, y, z) (x & y | ~x & z)
 #define AG(x, y, z) (x & z | y & ~z)
 #define AH(x, y, z) (x ^ y ^ z)
 #define AI(x, y, z) (y ^ (x | ~z))
-
 
 /* a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s). */
 #define RF(a, b, c, d, xk, s, ti) \
@@ -39,10 +40,8 @@
 int main(int argc, char * argv[]) {
     FILE* file;
     uint8_t* buffer;
-    uint32_t* buf_words;
     size_t buffer_len;
     long file_len;
-    // uint64_t len_append;
     uint64_t* len_append_addr;
     /* words A B C D in order */
     uint32_t mdbuf[4] = {0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476};
@@ -57,7 +56,7 @@ int main(int argc, char * argv[]) {
      * integer and type differences.  especially: a lot of stuff here relies on
      * integers not having padding. */
 
-    if (!argc) {
+    if (argc < 2) {
         fprintf(stderr, "gimme a file pls\n");
         return 1;
     }
@@ -75,7 +74,6 @@ int main(int argc, char * argv[]) {
     /* TODO not sure if rewind or fseek is more appropriate (errors and eof) */
     rewind(file);
     /* message + the 9..72 bytes for padding and length */
-    /* TODO double check this */
     buffer_len = file_len + 8 + (64 - ((file_len + 8) % 64));
     buffer = malloc(buffer_len);
     if (!buffer) {
@@ -242,6 +240,8 @@ int main(int argc, char * argv[]) {
         mdbuf[3] = mdbuf[3] + mdbuf_prev[3];
     }
 
+    free(buffer);
+
     /* TODO free memories!! */
 
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
@@ -262,6 +262,5 @@ int main(int argc, char * argv[]) {
 #endif
 
 
-    
     return 0;
 }
