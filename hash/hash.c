@@ -131,22 +131,22 @@ int main() {
         /* Let [abcd k s i] denote the operation
           a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s). */
         /* Do the following 16 operations. */
-        mdbuf[0] mdbuf[1] mdbuf[2] mdbuf[3]   0  7  1
-        mdbuf[3] mdbuf[0] mdbuf[1] mdbuf[2]   1 12  2
-        mdbuf[2] mdbuf[3] mdbuf[0] mdbuf[1]   2 17  3
-        mdbuf[1] mdbuf[2] mdbuf[3] mdbuf[0]   3 22  4
-        mdbuf[0] mdbuf[1] mdbuf[2] mdbuf[3]   4  7  5
-        mdbuf[3] mdbuf[0] mdbuf[1] mdbuf[2]   5 12  6
-        mdbuf[2] mdbuf[3] mdbuf[0] mdbuf[1]   6 17  7
-        mdbuf[1] mdbuf[2] mdbuf[3] mdbuf[0]   7 22  8
-        mdbuf[0] mdbuf[1] mdbuf[2] mdbuf[3]   8  7  9
-        mdbuf[3] mdbuf[0] mdbuf[1] mdbuf[2]   9 12 10
-        mdbuf[2] mdbuf[3] mdbuf[0] mdbuf[1]  10 17 11
-        mdbuf[1] mdbuf[2] mdbuf[3] mdbuf[0]  11 22 12
-        mdbuf[0] mdbuf[1] mdbuf[2] mdbuf[3]  12  7 13
-        mdbuf[3] mdbuf[0] mdbuf[1] mdbuf[2]  13 12 14
-        mdbuf[2] mdbuf[3] mdbuf[0] mdbuf[1]  14 17 15
-        mdbuf[1] mdbuf[2] mdbuf[3] mdbuf[0]  15 22 16
+        [ABCD  0  7  1]
+        [DABC  1 12  2]
+        [CDAB  2 17  3]
+        [BCDA  3 22  4]
+        [ABCD  4  7  5]
+        [DABC  5 12  6]
+        [CDAB  6 17  7]
+        [BCDA  7 22  8]
+        [ABCD  8  7  9]
+        [DABC  9 12 10]
+        [CDAB 10 17 11]
+        [BCDA 11 22 12]
+        [ABCD 12  7 13]
+        [DABC 13 12 14]
+        [CDAB 14 17 15]
+        [BCDA 15 22 16]
 
         /* Round 2. */
         /* Let [abcd k s i] denote the operation
