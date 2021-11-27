@@ -131,85 +131,85 @@ int main() {
         /* Let [abcd k s i] denote the operation
           a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s). */
         /* Do the following 16 operations. */
-        [ABCD  0  7  1]
-        [DABC  1 12  2]
-        [CDAB  2 17  3]
-        [BCDA  3 22  4]
-        [ABCD  4  7  5]
-        [DABC  5 12  6]
-        [CDAB  6 17  7]
-        [BCDA  7 22  8]
-        [ABCD  8  7  9]
-        [DABC  9 12 10]
-        [CDAB 10 17 11]
-        [BCDA 11 22 12]
-        [ABCD 12  7 13]
-        [DABC 13 12 14]
-        [CDAB 14 17 15]
-        [BCDA 15 22 16]
+        RF(A, B, C, D,  op_x[0],  7, 0xd76aa478);
+        RF(D, A, B, C,  op_x[1], 12, 0xe8c7b756);
+        RF(C, D, A, B,  op_x[2], 17, 0x242070db);
+        RF(B, C, D, A,  op_x[3], 22, 0xc1bdceee);
+        RF(A, B, C, D,  op_x[4],  7, 0xf57c0faf);
+        RF(D, A, B, C,  op_x[5], 12, 0x4787c62a);
+        RF(C, D, A, B,  op_x[6], 17, 0xa8304613);
+        RF(B, C, D, A,  op_x[7], 22, 0xfd469501);
+        RF(A, B, C, D,  op_x[8],  7, 0x698098d8);
+        RF(D, A, B, C,  op_x[9], 12, 0x8b44f7af);
+        RF(C, D, A, B, op_x[10], 17, 0xffff5bb1);
+        RF(B, C, D, A, op_x[11], 22, 0x895cd7be);
+        RF(A, B, C, D, op_x[12],  7, 0x6b901122);
+        RF(D, A, B, C, op_x[13], 12, 0xfd987193);
+        RF(C, D, A, B, op_x[14], 17, 0xa679438e);
+        RF(B, C, D, A, op_x[15], 22, 0x49b40821);
 
         /* Round 2. */
         /* Let [abcd k s i] denote the operation
           a = b + ((a + G(b,c,d) + X[k] + T[i]) <<< s). */
         /* Do the following 16 operations. */
-        [ABCD  1  5 17]
-        [DABC  6  9 18]
-        [CDAB 11 14 19]
-        [BCDA  0 20 20]
-        [ABCD  5  5 21]
-        [DABC 10  9 22]
-        [CDAB 15 14 23]
-        [BCDA  4 20 24]
-        [ABCD  9  5 25]
-        [DABC 14  9 26]
-        [CDAB  3 14 27]
-        [BCDA  8 20 28]
-        [ABCD 13  5 29]
-        [DABC  2  9 30]
-        [CDAB  7 14 31]
-        [BCDA 12 20 32]
+        RF(A, B, C, D,   op_x[1],  5, 0xf61e2562);
+        RF(D, A, B, C,   op_x[6],  9, 0xc040b340);
+        RF(C, D, A, B,  op_x[11], 14, 0x265e5a51);
+        RF(B, C, D, A,   op_x[0], 20, 0xe9b6c7aa);
+        RF(A, B, C, D,   op_x[5],  5, 0xd62f105d);
+        RF(D, A, B, C,  op_x[10],  9, 0x2441453);
+        RF(C, D, A, B,  op_x[15], 14, 0xd8a1e681);
+        RF(B, C, D, A,   op_x[4], 20, 0xe7d3fbc8);
+        RF(A, B, C, D,   op_x[9],  5, 0x21e1cde6);
+        RF(D, A, B, C,  op_x[14],  9, 0xc33707d6);
+        RF(C, D, A, B,   op_x[3], 14, 0xf4d50d87);
+        RF(B, C, D, A,   op_x[8], 20, 0x455a14ed);
+        RF(A, B, C, D,  op_x[13],  5, 0xa9e3e905);
+        RF(D, A, B, C,   op_x[2],  9, 0xfcefa3f8);
+        RF(C, D, A, B,   op_x[7], 14, 0x676f02d9);
+        RF(B, C, D, A,  op_x[12], 20, 0x8d2a4c8a);
 
         /* Round 3. */
         /* Let [abcd k s i] denote the operation
           a = b + ((a + H(b,c,d) + X[k] + T[i]) <<< s). */
         /* Do the following 16 operations. */
-        [ABCD  5  4 33]
-        [DABC  8 11 34]
-        [CDAB 11 16 35]
-        [BCDA 14 23 36]
-        [ABCD  1  4 37]
-        [DABC  4 11 38]
-        [CDAB  7 16 39]
-        [BCDA 10 23 40]
-        [ABCD 13  4 41]
-        [DABC  0 11 42]
-        [CDAB  3 16 43]
-        [BCDA  6 23 44]
-        [ABCD  9  4 45]
-        [DABC 12 11 46]
-        [CDAB 15 16 47]
-        [BCDA  2 23 48]
+        RF(A, B, C, D,   op_x[5],  4, 0xfffa3942);
+        RF(D, A, B, C,   op_x[8], 11, 0x8771f681);
+        RF(C, D, A, B,  op_x[11], 16, 0x6d9d6122);
+        RF(B, C, D, A,  op_x[14], 23, 0xfde5380c);
+        RF(A, B, C, D,   op_x[1],  4, 0xa4beea44);
+        RF(D, A, B, C,   op_x[4], 11, 0x4bdecfa9);
+        RF(C, D, A, B,   op_x[7], 16, 0xf6bb4b60);
+        RF(B, C, D, A,  op_x[10], 23, 0xbebfbc70);
+        RF(A, B, C, D,  op_x[13],  4, 0x289b7ec6);
+        RF(D, A, B, C,   op_x[0], 11, 0xeaa127fa);
+        RF(C, D, A, B,   op_x[3], 16, 0xd4ef3085);
+        RF(B, C, D, A,   op_x[6], 23, 0x4881d05);
+        RF(A, B, C, D,   op_x[9],  4, 0xd9d4d039);
+        RF(D, A, B, C,  op_x[12], 11, 0xe6db99e5);
+        RF(C, D, A, B,  op_x[15], 16, 0x1fa27cf8);
+        RF(B, C, D, A,   op_x[2], 23, 0xc4ac5665);
 
         /* Round 4. */
         /* Let [abcd k s i] denote the operation
           a = b + ((a + I(b,c,d) + X[k] + T[i]) <<< s). */
         /* Do the following 16 operations. */
-        [ABCD  0  6 49]
-        [DABC  7 10 50]
-        [CDAB 14 15 51]
-        [BCDA  5 21 52]
-        [ABCD 12  6 53]
-        [DABC  3 10 54]
-        [CDAB 10 15 55]
-        [BCDA  1 21 56]
-        [ABCD  8  6 57]
-        [DABC 15 10 58]
-        [CDAB  6 15 59]
-        [BCDA 13 21 60]
-        [ABCD  4  6 61]
-        [DABC 11 10 62]
-        [CDAB  2 15 63]
-        [BCDA  9 21 64]
+        RF(A, B, C, D,   op_x[0],  6, 0xf4292244);
+        RF(D, A, B, C,   op_x[7], 10, 0x432aff97);
+        RF(C, D, A, B,  op_x[14], 15, 0xab9423a7);
+        RF(B, C, D, A,   op_x[5], 21, 0xfc93a039);
+        RF(A, B, C, D,  op_x[12],  6, 0x655b59c3);
+        RF(D, A, B, C,   op_x[3], 10, 0x8f0ccc92);
+        RF(C, D, A, B,  op_x[10], 15, 0xffeff47d);
+        RF(B, C, D, A,   op_x[1], 21, 0x85845dd1);
+        RF(A, B, C, D,   op_x[8],  6, 0x6fa87e4f);
+        RF(D, A, B, C,  op_x[15], 10, 0xfe2ce6e0);
+        RF(C, D, A, B,   op_x[6], 15, 0xa3014314);
+        RF(B, C, D, A,  op_x[13], 21, 0x4e0811a1);
+        RF(A, B, C, D,   op_x[4],  6, 0xf7537e82);
+        RF(D, A, B, C,  op_x[11], 10, 0xbd3af235);
+        RF(C, D, A, B,   op_x[2], 15, 0x2ad7d2bb);
+        RF(B, C, D, A,   op_x[9], 21, 0xeb86d391);
 
 
     }
