@@ -30,3 +30,8 @@ F(X, Y, Z) = X & Y | ~X & Z
 G(X, Y, Z) = X & Z | Y & ~Z
 H(X, Y, Z) = X ^ Y ^ Z
 I(X, Y, Z) = Y ^ (X | ~Z)
+
+buffer[i * 64]
+*(buffer + i * 64)
+
+

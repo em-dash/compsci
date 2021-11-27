@@ -6,14 +6,15 @@
 /* "word" means 32-bit unsigned integer */
 
 /* left shift with rotate (32-bit unsigned integers) */
-#define LROT32(n, x) (n << x) | (n >> (32 - x))
+/* x is always less than 32 */
+ #define LROT32(n, x) ((n << x) | (n >> (32 - x)))
 
 /* F, G, H, I auxiliary function macros */
 /* TODO check this, esp operator precedence */
-#define AF(x, y, z) x & y | ~x & z
-#define AG(x, y, z) x & z | y & ~z
-#define AH(x, y, z) x ^ y ^ z
-#define AI(x, y, z) y ^ (x | ~z)
+#define AF(x, y, z) (x & y | ~x & z)
+#define AG(x, y, z) (x & z | y & ~z)
+#define AH(x, y, z) (x ^ y ^ z)
+#define AI(x, y, z) (y ^ (x | ~z))
 
 
 /* a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s). */
@@ -35,26 +36,33 @@
 
 
 
-int main() {
+int main(int argc, char * argv[]) {
     FILE* file;
     uint8_t* buffer;
     uint32_t* buf_words;
     size_t buffer_len;
     long file_len;
-    uint64_t len_append;
+    // uint64_t len_append;
     uint64_t* len_append_addr;
     /* words A B C D in order */
     uint32_t mdbuf[4] = {0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476};
     uint32_t mdbuf_prev[4];
     uint32_t op_x[16];
-    size_t i;
+    size_t i, j;
+    uint8_t* out_bytes;
 
     /* TODO handle messages with a non-whole number of bytes */
     /* TODO handle messages too big to fit in memory all at once */
     /* TODO figure out portability to systems without uint8_t, and with other
-     * integer and type differences.  idk. */
+     * integer and type differences.  especially: a lot of stuff here relies on
+     * integers not having padding. */
 
-    file = fopen("test", "r");
+    if (!argc) {
+        fprintf(stderr, "gimme a file pls\n");
+        return 1;
+    }
+
+    file = fopen(argv[1], "r");
     if (!file) {
         fprintf(stderr, "can't open file\n");
         return 1;
@@ -63,7 +71,7 @@ int main() {
     /* TODO this only works on files, not streams */
     /* TODO check for errors */
     fseek(file, 0L, SEEK_END);
-    file_len = ftell(file) + 1;
+    file_len = ftell(file);
     /* TODO not sure if rewind or fseek is more appropriate (errors and eof) */
     rewind(file);
     /* message + the 9..72 bytes for padding and length */
@@ -77,7 +85,7 @@ int main() {
     }
     /* put the stuff in buffer */
     /* TODO can the file be modified between the length check and here?  if so,
-     * fix it */
+     * fix it somehow i guess */
     fread(buffer, 1, buffer_len, file);
     fclose(file);
 
@@ -93,6 +101,7 @@ int main() {
     /* high index = buffer_len - 1 - 8
      * low index = file_len + 1
      * count = high index - low index + 1
+     * count = (buffer_len - 1 - 8) - (file_len + 1) + 1
      * count = buffer_len - file_len - 9 */
     /* TODO check integer conversions in buffer + file_len + 1 */
     memset(buffer + file_len + 1, 0, buffer_len - file_len - 9);
@@ -119,9 +128,22 @@ int main() {
     for (i = 0; i < buffer_len / 64; i++) {
         /* copy block i into X (length is 64 bytes = 16 * 32-bit words) */
         /* TODO check this makes sense */
+        /* TODO also this doesn't get changed in any way so we could just point 
+         * to the original memory of the message (maybe with exceptions based on
+         * loading the files and stuff idk) */
+        /* TODO this is very depend on byte order */
         memcpy(op_x, buffer + i * 64, 64);
+
+
+
+
         /* make a copy of 4 word buffer (mdbuf to mdbuf_prev) */
+        /* this memcpy should be fine because it's to and from the same type */
         memcpy(mdbuf_prev, mdbuf, 16);
+
+
+
+
 
 
         /* intentionally allowing for overflows to wrap */
@@ -213,10 +235,24 @@ int main() {
         RI(mdbuf[3], mdbuf[0], mdbuf[1], mdbuf[2],  op_x[11], 10, 0xbd3af235);
         RI(mdbuf[2], mdbuf[3], mdbuf[0], mdbuf[1],   op_x[2], 15, 0x2ad7d2bb);
         RI(mdbuf[1], mdbuf[2], mdbuf[3], mdbuf[0],   op_x[9], 21, 0xeb86d391);
+
+        mdbuf[0] = mdbuf[0] + mdbuf_prev[0];
+        mdbuf[1] = mdbuf[1] + mdbuf_prev[1];
+        mdbuf[2] = mdbuf[2] + mdbuf_prev[2];
+        mdbuf[3] = mdbuf[3] + mdbuf_prev[3];
     }
 
+    /* TODO free memories!! */
+
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
-    printf("%.8x%.8x%.8x%.8x\n", mdbuf[0], mdbuf[1], mdbuf[2], mdbuf[3]);
+
+    /* TODO idk this feels awkward */
+    out_bytes = (uint8_t *) mdbuf;
+    for (i = 0; i < 16; i++) {
+        printf("%.2x", out_bytes[i]);
+    }
+    printf("\n");
+
 #endif
 
 
