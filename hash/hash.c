@@ -120,7 +120,9 @@ int main(int argc, char * argv[]) {
 
     /* process message */
     /* number of blocks = buffer_len / 64 */
-    /* for each block i */
+    /* TODO does alignment matter with any of this??  seems likely malloc gives 
+     * me a thing that's aligned in a way that would work for uint32_t anyway, 
+     * but i'm not sure if that's always true */
     /* TODO does this reevaluate buffer_len / 64 each time?  if so, fix.  (or
      * maybe just fix anyway.) */
     for (i = 0; i < buffer_len / 64; i++) {
