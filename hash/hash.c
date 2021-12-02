@@ -64,7 +64,7 @@ int main(int argc, char * argv[]) {
     file = fopen(argv[1], "r");
     if (!file) {
         fprintf(stderr, "can't open file\n");
-        return 1;
+        return 2;
     }
 
     /* TODO this only works on files, not streams */
