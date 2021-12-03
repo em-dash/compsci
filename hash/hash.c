@@ -61,6 +61,8 @@ int main(int argc, char * argv[]) {
         return 1;
     }
 
+    /* TODO filenames are multibyte strings but also it's complicated with unix
+     * cause it just passes bytes verbaitum idk */
     file = fopen(argv[1], "r");
     if (!file) {
         fprintf(stderr, "can't open file\n");

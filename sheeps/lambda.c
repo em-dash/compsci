@@ -1,18 +1,20 @@
 
 #include "../util/file.h"
 
-/* token macro replacements.  identifiers are positive integers, zero terminates
- * the array, and these negative macro constants are other stuff. */
-#define T_PAREN -10
-#define T_LAMBDA -50
-#define T_DOT -51
-#define T_TERM 0
-
+/* token macro replacements.  identifiers are positive integers, negative one
+ * terminates the array, and these negative macro constants are other stuff. */
+enum toktype {
+    T_PAREN,
+    T_LAMBDA,
+    T_DOT,
+    T_END
+}
 
 /* i have no idea what i'm doing but the plan is to just do the basic rules of
  * lambda calculus, and then doing the fancy stuff where you can make numbers
  * and maths and whatever out of it. */
 
+/* what */
 struct id {
     int index;
     char[128] id;
@@ -46,6 +48,8 @@ struct app {
     void * n;
 };
 
+struct token {
+    const enum toktype toktype = 
 
 
 
@@ -55,16 +59,18 @@ struct app {
  * write complex stuff */
 
 
-
+/* is having this be null-terminated a good idea? */
 int * tokenize(unsigned char * buf, size_t buflen) {
     /* maximum length of an identifier is 128 */
     unsigned char id[128];
-    struct id * ids;
-    size_t idlen;
-    size_t idmax;
+    size_t idchars;
+    /* struct id * ids; */
+    unsigned char * (ids[128]);
+    size_t idslen;
+    size_t idsmax;
     int * tok;
     size_t toklen;
-    size_t idmax;
+    size_t tokmax;
     size_t i = 0;
 
     if (!tok = malloc(1024 * sizeof (int))) {
@@ -83,18 +89,21 @@ int * tokenize(unsigned char * buf, size_t buflen) {
         
         /* if is dot or sheep */
 
-        /* apparently the result of isalpha depends on locale */
-        idlen = 0;
-        while (isalpha(buf[i])) {
-            if (idlen > 128) {
-                /* error it's too long */
-                free(tok);
-                return 
-            id[idlen] = buf[i];
-            idlen++;
-            i++;
-
-                
+        if (isalpha(buf[i])) {
+            memset(&id, NULL, 128);
+            /* apparently the result of isalpha depends on locale */
+            idchars = 0;
+            while (isalpha(buf[i])) {
+                if (idchars > 127) {
+                    /* error it's too long */
+                    free(tok);
+                    return NULL;
+                }
+                id[idchars] = buf[i];
+                idchars++;
+                i++;
+            }
+            
         }
     }
 }

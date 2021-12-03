@@ -8,11 +8,12 @@ struct vec_##type { \
 }; \
 \
 struct vec_##type * vapnd_##type(struct vec_##type * const v, type item) { \
-    if (v.len < .maxlen) { \
+    if (v.len < v.maxlen) { \
         v.data[len] = item; \
         len++; \
         return v; \
     } \
+    /* TODO handle errors from vxtnd */\
     vxtnd_##type(v); \
     v.data[len] = item; \
     return v; \
@@ -20,8 +21,10 @@ struct vec_##type * vapnd_##type(struct vec_##type * const v, type item) { \
 \
 struct vec_##type * vxtnd_##type(struct vec_##type * const v) { \
     size_t i = 2; \
+\
     while (i < v.len) { \
         i = i * 2; \
     } \
-    return realloc(v, v.len = i * 2); \
-}
+    v.len = i * 2; \
+    return realloc(v.data, v.len * sizeof (type)); \
+} \
