@@ -38,17 +38,19 @@
 
 
 int main(int argc, char * argv[]) {
-    FILE* file;
-    uint8_t* buffer;
+    FILE * file;
+    uint8_t * buffer;
     size_t buffer_len;
     long file_len;
-    uint64_t* len_append_addr;
+    uint64_t * len_append_addr;
     /* words A B C D in order */
     uint32_t mdbuf[4] = {0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476};
     uint32_t mdbuf_prev[4];
-    uint32_t op_x[16];
+    /* uint32_t op_x[16]; */
+    /* TODO would it help to make this uint32_t const * instead? */
+    uint32_t * op_x;
     size_t i, j;
-    uint8_t* out_bytes;
+    uint8_t * out_bytes;
 
     /* TODO handle messages with a non-whole number of bytes */
     /* TODO handle messages too big to fit in memory all at once */
@@ -134,19 +136,12 @@ int main(int argc, char * argv[]) {
          * to the original memory of the message (maybe with exceptions based on
          * loading the files and stuff idk) */
         /* TODO this is very depend on byte order */
-        memcpy(op_x, buffer + i * 64, 64);
-
-
-
+        /* memcpy(op_x, buffer + i * 64, 64); */
+        op_x = (uint32_t *) (buffer + i * 64);
 
         /* make a copy of 4 word buffer (mdbuf to mdbuf_prev) */
         /* this memcpy should be fine because it's to and from the same type */
         memcpy(mdbuf_prev, mdbuf, 16);
-
-
-
-
-
 
         /* intentionally allowing for overflows to wrap */
         /* ABCD is mdbuf[0] to mdbuf[3] */
