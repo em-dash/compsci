@@ -50,11 +50,13 @@ fn main() -> Result<(), io::Error> {
     // anyway use a buff reader or something apparently this isnt' proper
     /* will panic if an argument is not valid unicode */
     let args: Vec<String> = env::args().collect();
+    /* 
     if args.len() < 2 {
         /* TODO make this print to stderr instead */
         println!("pls pass a filename");
         return Err("no filename");
     }
+    */
     
     /* TODO need checks on the filename */
     let mut buffer = fs::read(&args[1]).expect("unable to read file");

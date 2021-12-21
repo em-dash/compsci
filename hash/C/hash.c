@@ -6,10 +6,9 @@
 /* "word" means 32-bit unsigned integer */
 
 /* left shift with rotate (32-bit unsigned integers) */
-/* x is always less than 32 */
-/* TODO it's maybe bad that this does the operation twice for each n here
- * (apparently the compiler figured this out which is pretty neat but still
- * maybe fix it) */
+/* x must be less than 32 */
+/* apparently the compiler figured this out which is pretty neat.  not sure
+ * whether to change it in some way. */
 #define LROT32(n, x) ((n << x) | (n >> (32 - x)))
 
 /* F, G, H, I auxiliary function macros */
@@ -38,6 +37,7 @@
 
 
 int main(int argc, char * argv[]) {
+    int result;
     FILE * file;
     uint8_t * buffer;
     size_t buffer_len;
@@ -45,13 +45,13 @@ int main(int argc, char * argv[]) {
     uint64_t * len_append_addr;
     /* words A B C D in order */
     uint32_t mdbuf[4] = {0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476};
+    /* words AA BB CC DD */
     uint32_t mdbuf_prev[4];
     /* uint32_t op_x[16]; */
     /* TODO would it help to make this uint32_t const * instead? */
     uint32_t * op_x;
     size_t i, j;
     uint8_t * out_bytes;
-
     /* TODO handle messages with a non-whole number of bytes */
     /* TODO handle messages too big to fit in memory all at once */
     /* TODO figure out portability to systems without uint8_t, and with other
@@ -65,19 +65,24 @@ int main(int argc, char * argv[]) {
 
     /* TODO filenames are multibyte strings but also it's complicated with unix
      * cause it just passes bytes verbaitum idk */
-    file = fopen(argv[1], "r");
+    /* the "b" file access flag does nothing on POSIX, but will stop windows
+     * from doing special handling of line endings */
+    file = fopen(argv[1], "rb");
     if (!file) {
         fprintf(stderr, "can't open file\n");
         return 2;
     }
 
-    /* TODO this only works on files, not streams */
+    /* TODO this only works on file files, not streams */
     /* TODO check for errors */
-    fseek(file, 0L, SEEK_END);
+    if (fseek(file, 0L, SEEK_END) != 0) {
+        fprintf(stderr, "error reading file");
+        fclose(file);
+    }
     file_len = ftell(file);
     /* TODO not sure if rewind or fseek is more appropriate (errors and eof) */
     rewind(file);
-    /* message + the 9..72 bytes for padding and length */
+    /* message + the bytes (9 to 72 inclusive) for padding and length */
     buffer_len = file_len + 8 + (64 - ((file_len + 8) % 64));
     buffer = malloc(buffer_len);
     if (!buffer) {
@@ -88,7 +93,7 @@ int main(int argc, char * argv[]) {
     /* put the stuff in buffer */
     /* TODO can the file be modified between the length check and here?  if so,
      * fix it somehow i guess */
-    fread(buffer, 1, buffer_len, file);
+    fread(buffer, 1, file_len, file);
     fclose(file);
 
     /* TEST */
@@ -261,5 +266,5 @@ int main(int argc, char * argv[]) {
 #endif
 
 
-    return 0;
+    return result;
 }
