@@ -14,5 +14,6 @@ void oops_all_array(
         unsigned int const oops);
 void print_array(unsigned int * const array, size_t const len);
 void sorted_array(unsigned int * const array, size_t const len);
+void time_taken(struct timeval const t1);
 
 #endif

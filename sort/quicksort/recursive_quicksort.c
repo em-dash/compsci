@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <limits.h>
+#include <sys/time.h> /* POSIX */
 
 #include "../array_utils.h"
 
@@ -44,6 +45,7 @@ int main() {
     /* unsigned int list[LENGTH]; */
     unsigned int * list;
     const size_t len = LENGTH;
+    struct timeval t;
 
     if (!(list = malloc(LENGTH * sizeof (unsigned int)))) {
         return 1;
@@ -58,7 +60,9 @@ int main() {
     /* print_array(list, len); */
     /* printf("\n"); */
 
+    gettimeofday(&t, NULL);
     quicksort(list, 0, len - 1);
+    time_taken(t);
     /* printf("sorted list:\n"); */
     /* print_array(list, len); */
 }
