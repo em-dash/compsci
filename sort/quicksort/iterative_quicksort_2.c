@@ -2,7 +2,7 @@
 
 #include "../array_utils.h"
 
-#define LENGTH 100000000
+#define LENGTH 10
 
 /* i need to make generics i know */
 struct stack {
@@ -87,6 +87,7 @@ static int quicksort(
             /* quicksort(list, new_pivot + 1, stack.top.high); */
         }
         else {
+            /* TODO clean up lol */
             if (s.top == 0) return 0;
             s.top -= 1;
         } /* will any of this work properly */
@@ -117,6 +118,6 @@ int main() {
     /* printf("\n"); */
 
     quicksort(list, 0, len - 1);
-    /* printf("sorted list:\n"); */
-    /* print_array(list, len); */
+    printf("sorted list:\n");
+    print_array(list, len);
 }
