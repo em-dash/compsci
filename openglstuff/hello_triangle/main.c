@@ -7,8 +7,27 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <time.h>
+#include <assert.h>
 
 #define GL_LOG_FILE "gl.log"
+
+/* combining gl_log and gl_log_err from the tutorial */
+char gl_log(const char * message, ...) {
+    va_list argptr;
+    FILE * file = fopen(GL_LOG_FILE, "a");
+    if (!file) {
+        fprintf(stderr, "couldn't append to GL_LOG_FILE %s\n", GL_LOG_FILE);
+        return 0; /* failed */
+    }
+    va_start(argptr, message);
+    vfprintf(file, message, argptr);
+    va_end(argptr);
+    va_start(argptr, message);
+    vfprintf(stderr, message, argptr);
+    va_end(argptr);
+    fclose(file);
+    return 1; /* succeeded */
+}
 
 char restart_gl_log() {
     FILE * fp = fopen(GL_LOG_FILE, "w");
@@ -23,10 +42,10 @@ char restart_gl_log() {
     return 1; /* success*/
 }
 
+
 /* read a file and make const char * result point to a null-terminated string
  * containing the file, or just NULL if something went wrong */
-/* NOTE this is bad, i should probably make a generalized function for doing
- * this or something.  no i don't want to use the gnu extension thing. */
+/* TODO needs to be better */
 char * read_file(const char * const filename) {
     char * buffer = NULL;
     size_t length;
@@ -53,17 +72,38 @@ char * read_file(const char * const filename) {
 }
 
 
+void glfw_error_callback(int error, const char * description) {
+    gl_log("GLFW (ERROR): code %i msg: %s\n", error, description);
+}
+
+
 int main() {
+    assert(restart_gl_log());
     /* make gl context and window with glfw */
+    gl_log("GLFW: starting GLFW version %s\n", glfwGetVersionString());
+    glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit()) {
-        fprintf(stderr, "ERROR can't do glfw oops\n");
+        gl_log("GLFW (ERROR): can't init glfw oops\n");
         return 1;
     }
 
-    GLFWwindow* window = glfwCreateWindow(640, 480, "henlo triangle", NULL,
-        NULL);
+    /* glfw version hints */
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    /* antialiasing apparently */
+    glfwWindowHint(GLFW_SAMPLES, 4);
+
+    /* monitor info */
+    GLFWmonitor * mon = glfwGetPrimaryMonitor();
+    const GLFWvidmode * vmode = glfwGetVideoMode(mon);
+    /* create window */
+    // GLFWwindow * window = glfwCreateWindow(vmode->width, vmode->height,
+    //         "trongle", mon, NULL);
+    GLFWwindow * window = glfwCreateWindow(640, 480, "trongle", NULL, NULL);
     if (!window) {
-        fprintf(stderr, "ERROR can't do window with glfw heck\n");
+        gl_log("ERROR can't do window with glfw heck\n");
         glfwTerminate();
         return 1;
     }
@@ -104,9 +144,10 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
+    /* using version 300 of glsl for my lil guy laptop, not sure how to choose
+     * versions in general */
     const char * vertex_shader = read_file("triangle.vs.glsl");
     if (vertex_shader == NULL) return 1;
-
     const char * fragment_shader = read_file("triangle.fs.glsl");
     if (fragment_shader == NULL) return 1;
 
