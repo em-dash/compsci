@@ -187,6 +187,7 @@ int main() {
     glAttachShader(shader_program, vs);
     glLinkProgram(shader_program);
 
+    double tick_counter = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
         /* clear drawing surface */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -194,6 +195,8 @@ int main() {
 
         glUseProgram(shader_program);
         glBindVertexArray(vao);
+        glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), points,
+                GL_STATIC_DRAW);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glfwSwapBuffers(window);
@@ -203,6 +206,33 @@ int main() {
         if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE)) {
             glfwSetWindowShouldClose(window, 1);
         }
+
+        /* if it's been 1/100th of a second, tick the "game" physics */
+        if (glfwGetTime() - tick_counter > 0.01) {
+            printf("lol %f\n", glfwGetTime());
+            tick_counter = glfwGetTime();
+            if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_RIGHT)) {
+                points[0] += 0.05;
+                points[3] += 0.05;
+                points[6] += 0.05;
+            }
+            if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_LEFT)) {
+                points[0] -= 0.05;
+                points[3] -= 0.05;
+                points[6] -= 0.05;
+            }
+            if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_UP)) {
+                points[1] -= 0.05;
+                points[4] -= 0.05;
+                points[7] -= 0.05;
+            }
+            if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_DOWN)) {
+                points[1] += 0.05;
+                points[4] += 0.05;
+                points[7] += 0.05;
+            }
+        }
+        
     }
 
     // close GL context and any other GLFW resources
