@@ -1,2 +1,2 @@
 
-gcc -o triangle main.c -lglfw -lGL -lGLEW
+clang -o triangle main.c -lglfw -lGL -lGLEW -Wall

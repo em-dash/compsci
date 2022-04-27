@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <sys/time.h>
 
 #include "array_utils.h"
 
@@ -47,4 +48,14 @@ void print_array(unsigned int * const array, size_t const len) {
     for (i = 0; i < len; i++) {
         printf("%10u\n", array[i]);
     }
+}
+
+void time_taken(struct timeval const t1) {
+    double diff;
+    struct timeval t2;
+
+    gettimeofday(&t2, NULL);
+    diff = (double) ((t2.tv_sec - t1.tv_sec) + 
+        (((double) t2.tv_usec - (double) t1.tv_usec) / 1000000));
+    printf("took %f seconds\n", diff);
 }

@@ -1,31 +1,41 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <sys/time.h>
 #include <string.h>
+
+#include "../array_utils.h"
 
 /* if you make this number really big you can make it segfault cause the stack
  * frame won't fit in memory >:3 */
-#define LIST_LENGTH 83789
+#define LIST_LENGTH 100000000
 
 int main(int argc, char ** argv) {
-    unsigned int list_in[LIST_LENGTH];
-    unsigned int list_out[LIST_LENGTH];
+    unsigned int * list_in;
+    unsigned int * list_out;
     /* i don't think size_t is correct cause the prefix sum part technically
      * could overflow it */
     size_t counts[256] = {0};
     unsigned char byte;
     size_t i, j;
+    struct timeval t;
 
-    /* generate list of LIST_LENGTH random ints */
-    srand(time(NULL));
-    for (i = 0; i < LIST_LENGTH; i++) {
-        list_in[i] = rand();
+    if (!(list_in = malloc(LIST_LENGTH * sizeof (unsigned int)))) {
+        return 1;
     }
-    printf("unsorted list:\n");
-    for (i = 0; i < LIST_LENGTH; i++) {
-        printf("%10d\n", list_in[i]);
+    if (!(list_out = malloc(LIST_LENGTH * sizeof (unsigned int)))) {
+        return 1;
     }
-    printf("\n");
+
+    randomize_array(list_in, LIST_LENGTH);
+
+    // printf("unsorted list:\n");
+    // for (i = 0; i < LIST_LENGTH; i++) {
+    //     printf("%10d\n", list_in[i]);
+    // }
+    // printf("\n");
+
+    gettimeofday(&t, NULL);
 
     /* sort the list */
     for (i = 0; i < 4; i += 1) {
@@ -52,12 +62,14 @@ int main(int argc, char ** argv) {
 
         memset(&counts, 0, 256 * sizeof (size_t));
 
-        memcpy(&list_in, &list_out, LIST_LENGTH * (sizeof (int)));
+        memcpy(list_in, list_out, LIST_LENGTH * (sizeof (int)));
     }
 
-    printf("sorted list:\n");
-    for (i = 0; i < LIST_LENGTH; i++) {
-        printf("%10d\n", list_in[i]);
-    }
-    printf("\n");
+    time_taken(t);
+
+    // printf("sorted list:\n");
+    // for (i = 0; i < LIST_LENGTH; i++) {
+    //     printf("%10d\n", list_in[i]);
+    // }
+    // printf("\n");
 }

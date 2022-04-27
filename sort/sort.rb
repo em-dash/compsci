@@ -1,44 +1,28 @@
 require 'benchmark'
 
-def time_taken(function, *args)
-    Benchmark.measure { send(function, *args) }
-end
-
 def random_list(length = 20, limit = 1000000000)
     Array.new(length) { rand(0..limit) }
 end
 
+# idk
 def blepsort(l)
     # cover edge case that would break things
     return l if l.length <= 1
-    sorted = false
+    sorted = false # is this still needed if we do the sorted_idx thing?
+    sorted_idx = l.length - 1
     # not sure what the idiomatic way to edit an array while iterating over it
     # TODO look up loops maybe to see how to do this
-    while not sorted
+    while sorted_idx > 1
         sorted = true
         # don't do the last element cause there's nothing after it
-        for i in 0...(l.length - 1)
+        for i in 0...(sorted_idx)
+            sorted_idx = 0
             if l[i] > l[i + 1]
                 l[i], l[i + 1] = l[i + 1], l[i]
-                sorted = false
+                sorted_idx = i
             end
         end
-    end
-    return l
-end
-
-def endssort(l)
-    i = 0
-    j = l.length - 1
-    while i < l.length - 1
-        while i < j
-            if l[i] > l[j]
-                l[i], l[j] = l[j], l[i]
-            end
-            j -= 1
-        end
-        i += 1
-        j = l.length - 1
+        sorted_idx = l.length - 1
     end
     return l
 end
