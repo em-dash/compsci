@@ -11,6 +11,17 @@
 
 #define GL_LOG_FILE "gl.log"
 
+int g_gl_width = 640;
+int g_gl_height = 480;
+
+
+
+void glfw_window_size_callback(GLFWwindow * window, int width, int height) {
+    g_gl_width = width;
+    g_gl_height = height;
+    /* update perspective matrices here apparently */
+}
+
 /* combining gl_log and gl_log_err from the tutorial */
 char gl_log(const char * message, ...) {
     va_list argptr;
@@ -27,6 +38,55 @@ char gl_log(const char * message, ...) {
     va_end(argptr);
     fclose(file);
     return 1; /* succeeded */
+}
+
+
+void log_gl_params() {
+    GLenum params[] = {
+        GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS,
+        GL_MAX_CUBE_MAP_TEXTURE_SIZE,
+        GL_MAX_DRAW_BUFFERS,
+        GL_MAX_FRAGMENT_UNIFORM_COMPONENTS,
+        GL_MAX_TEXTURE_IMAGE_UNITS,
+        GL_MAX_TEXTURE_SIZE,
+        GL_MAX_VARYING_FLOATS,
+        GL_MAX_VERTEX_ATTRIBS,
+        GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,
+        GL_MAX_VERTEX_UNIFORM_COMPONENTS,
+        GL_MAX_VIEWPORT_DIMS,
+        GL_STEREO,
+    };
+    const char* names[] = {
+        "GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS",
+        "GL_MAX_CUBE_MAP_TEXTURE_SIZE",
+        "GL_MAX_DRAW_BUFFERS",
+        "GL_MAX_FRAGMENT_UNIFORM_COMPONENTS",
+        "GL_MAX_TEXTURE_IMAGE_UNITS",
+        "GL_MAX_TEXTURE_SIZE",
+        "GL_MAX_VARYING_FLOATS",
+        "GL_MAX_VERTEX_ATTRIBS",
+        "GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS",
+        "GL_MAX_VERTEX_UNIFORM_COMPONENTS",
+        "GL_MAX_VIEWPORT_DIMS",
+        "GL_STEREO",
+    };
+    gl_log("GL Context Params:\n");
+    char msg[256];
+    // integers - only works if the order is 0-10 integer return types
+    for (int i = 0; i < 10; i++) {
+        int v = 0;
+        glGetIntegerv(params[i], &v);
+        gl_log("%s %i\n", names[i], v);
+    }
+    // others
+    int v[2];
+    v[0] = v[1] = 0;
+    glGetIntegerv(params[10], v);
+    gl_log("%s %i %i\n", names[10], v[0], v[1]);
+    unsigned char s = 0;
+    glGetBooleanv(params[11], &s);
+    gl_log("%s %u\n", names[11], (unsigned int)s);
+    gl_log("-----------------------------\n");
 }
 
 char restart_gl_log() {
@@ -81,7 +141,9 @@ int main() {
     assert(restart_gl_log());
     /* make gl context and window with glfw */
     gl_log("GLFW: starting GLFW version %s\n", glfwGetVersionString());
+
     glfwSetErrorCallback(glfw_error_callback);
+
     if (!glfwInit()) {
         gl_log("GLFW (ERROR): can't init glfw oops\n");
         return 1;
@@ -103,11 +165,14 @@ int main() {
     //         "trongle", mon, NULL);
     GLFWwindow * window = glfwCreateWindow(640, 480, "trongle", NULL, NULL);
     if (!window) {
-        gl_log("ERROR can't do window with glfw heck\n");
+        gl_log("GLFW (ERROR): can't create window\n");
         glfwTerminate();
         return 1;
     }
+
     glfwMakeContextCurrent(window);
+    log_gl_params(); /* needs a context */
+    glfwSetWindowSizeCallback(window, glfw_window_size_callback);
 
     /* start glew extension handler */
     glewExperimental = GL_TRUE;
@@ -130,7 +195,6 @@ int main() {
         0.5f, -0.5f, 0.0f,
         -0.5f, -0.5f, 0.0f
     };
-
     /* put the above triangle numbers up in the graphics card */
     GLuint vbo = 0;
     glGenBuffers(1, &vbo);
@@ -166,11 +230,17 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         /* clear drawing surface */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, g_gl_width, g_gl_height);
         glUseProgram(shader_program);
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 3);
-        glfwPollEvents();
         glfwSwapBuffers(window);
+        glfwPollEvents();
+
+        /* check if escape has been pressed and close the window if so */
+        if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE)) {
+            glfwSetWindowShouldClose(window, 1);
+        }
     }
 
     // close GL context and any other GLFW resources
