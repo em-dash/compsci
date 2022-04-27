@@ -122,7 +122,7 @@ int main() {
 
     GLFWmonitor * mon = glfwGetPrimaryMonitor();
     // const GLFWvidmode * vmode = glfwGetVideoMode(mon);
-    /* create window (windowed mode, not fullscreen) */
+    /* create window (windowed mode) */
     GLFWwindow * window = glfwCreateWindow(640, 480, "trongle", NULL, NULL);
     if (!window) {
         printf("GLFW (ERROR): can't create window\n");
@@ -131,6 +131,7 @@ int main() {
     }
 
     glfwMakeContextCurrent(window);
+    glfwSetWindowAspectRatio(window, 4, 3);
     log_gl_params();
     glfwSetWindowSizeCallback(window, glfw_window_size_callback);
 
