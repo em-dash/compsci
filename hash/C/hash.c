@@ -37,20 +37,17 @@
 
 
 int main(int argc, char * argv[]) {
-    int result;
+    int result = 0;
     FILE * file;
     uint8_t * buffer;
-    size_t buffer_len;
+    // size_t buffer_len;
     long file_len;
     uint64_t * len_append_addr;
     /* words A B C D in order */
     uint32_t mdbuf[4] = {0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476};
     /* words AA BB CC DD */
     uint32_t mdbuf_prev[4];
-    /* uint32_t op_x[16]; */
-    /* TODO would it help to make this uint32_t const * instead? */
-    uint32_t * op_x;
-    size_t i, j;
+    uint32_t const * op_x;
     uint8_t * out_bytes;
     /* TODO handle messages with a non-whole number of bytes */
     /* TODO handle messages too big to fit in memory all at once */
@@ -63,10 +60,6 @@ int main(int argc, char * argv[]) {
         return 1;
     }
 
-    /* TODO filenames are multibyte strings but also it's complicated with unix
-     * cause it just passes bytes verbaitum idk */
-    /* the "b" file access flag does nothing on POSIX, but will stop windows
-     * from doing special handling of line endings */
     file = fopen(argv[1], "rb");
     if (!file) {
         fprintf(stderr, "can't open file\n");
@@ -79,11 +72,13 @@ int main(int argc, char * argv[]) {
         fprintf(stderr, "error reading file");
         fclose(file);
     }
+    /* SEEK_END goes to the first byte after the end of the file, so
+     * ftell(file) is equivalent to the length of the file */
     file_len = ftell(file);
     /* TODO not sure if rewind or fseek is more appropriate (errors and eof) */
     rewind(file);
     /* message + the bytes (9 to 72 inclusive) for padding and length */
-    buffer_len = file_len + 8 + (64 - ((file_len + 8) % 64));
+    size_t const buffer_len = file_len + 8 + (64 - ((file_len + 8) % 64));
     buffer = malloc(buffer_len);
     if (!buffer) {
         fprintf(stderr, "can't allocate memory\n");
@@ -91,15 +86,10 @@ int main(int argc, char * argv[]) {
         return 1;
     }
     /* put the stuff in buffer */
-    /* TODO can the file be modified between the length check and here?  if so,
-     * fix it somehow i guess */
+    /* TODO the file can be modified between the length check and here.  account
+     * for this somehow, probably by throwing a tantrum (error). */
     fread(buffer, 1, file_len, file);
     fclose(file);
-
-    /* TEST */
-    /*
-    printf("%.*s\n", buffer_len, buffer);
-    */
 
     /* padding and appending length */
     /* the actual message went up to buffer[file_len - 1] so we start padding at
@@ -113,15 +103,15 @@ int main(int argc, char * argv[]) {
     /* TODO check integer conversions in buffer + file_len + 1 */
     memset(buffer + file_len + 1, 0, buffer_len - file_len - 9);
     /* TODO properly handle "the unlikely event that b is greater than 2^64" */
-    /* length of the original message in bits as a little-endian uint64_t */
 
-    /* TODO detect endianness lmao */
+    /* set len_append_addr to the length of the original message in bits as a
+     * little-endian uint64_t */
+/* TODO check if i can do better than this to detect endianness */
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
     /* TODO check integer conversions */
     len_append_addr = (uint64_t*) (buffer + buffer_len - 8);
     *len_append_addr = file_len * 8;
 #endif
-
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
 #error "big endian not implemented (also macros don't work properly)"
     /* TODO big endian */
@@ -131,17 +121,11 @@ int main(int argc, char * argv[]) {
     /* number of blocks = buffer_len / 64 */
     /* TODO does alignment matter with any of this??  seems likely malloc gives 
      * me a thing that's aligned in a way that would work for uint32_t anyway, 
-     * but i'm not sure if that's always true */
-    /* TODO does this reevaluate buffer_len / 64 each time?  if so, fix.  (or
-     * maybe just fix anyway.) */
-    for (i = 0; i < buffer_len / 64; i++) {
+     * but i'm not sure if that's guaranteed */
+    for (size_t i = 0; i < buffer_len / 64; i++) {
         /* copy block i into X (length is 64 bytes = 16 * 32-bit words) */
-        /* TODO check this makes sense */
-        /* TODO also this doesn't get changed in any way so we could just point 
-         * to the original memory of the message (maybe with exceptions based on
-         * loading the files and stuff idk) */
         /* TODO this is very depend on byte order */
-        /* memcpy(op_x, buffer + i * 64, 64); */
+
         op_x = (uint32_t *) (buffer + i * 64);
 
         /* make a copy of 4 word buffer (mdbuf to mdbuf_prev) */
@@ -249,14 +233,12 @@ int main(int argc, char * argv[]) {
     /* TODO free memories!! */
 
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
-
     /* TODO idk this feels awkward */
     out_bytes = (uint8_t *) mdbuf;
-    for (i = 0; i < 16; i++) {
+    for (size_t i = 0; i < 16; i++) {
         printf("%.2x", out_bytes[i]);
     }
     printf("\n");
-
 #endif
 
 
