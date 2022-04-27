@@ -11,34 +11,10 @@
 
 #define GL_LOG_FILE "gl.log"
 
+
+/* to be written only by glfw_window_size_callback() */
 int g_gl_width = 640;
 int g_gl_height = 480;
-
-
-
-void glfw_window_size_callback(GLFWwindow * window, int width, int height) {
-    g_gl_width = width;
-    g_gl_height = height;
-    /* update perspective matrices here apparently */
-}
-
-/* combining gl_log and gl_log_err from the tutorial */
-char gl_log(const char * message, ...) {
-    va_list argptr;
-    FILE * file = fopen(GL_LOG_FILE, "a");
-    if (!file) {
-        fprintf(stderr, "couldn't append to GL_LOG_FILE %s\n", GL_LOG_FILE);
-        return 0; /* failed */
-    }
-    va_start(argptr, message);
-    vfprintf(file, message, argptr);
-    va_end(argptr);
-    va_start(argptr, message);
-    vfprintf(stderr, message, argptr);
-    va_end(argptr);
-    fclose(file);
-    return 1; /* succeeded */
-}
 
 
 void log_gl_params() {
@@ -70,42 +46,27 @@ void log_gl_params() {
         "GL_MAX_VIEWPORT_DIMS",
         "GL_STEREO",
     };
-    gl_log("GL Context Params:\n");
+    printf("GL Context Params:\n");
     char msg[256];
-    // integers - only works if the order is 0-10 integer return types
+    /* integers - only works if the order is 0-10 integer return types */
     for (int i = 0; i < 10; i++) {
         int v = 0;
         glGetIntegerv(params[i], &v);
-        gl_log("%s %i\n", names[i], v);
+        printf("%s %i\n", names[i], v);
     }
-    // others
+    /* others */
     int v[2];
     v[0] = v[1] = 0;
     glGetIntegerv(params[10], v);
-    gl_log("%s %i %i\n", names[10], v[0], v[1]);
+    printf("%s %i %i\n", names[10], v[0], v[1]);
     unsigned char s = 0;
     glGetBooleanv(params[11], &s);
-    gl_log("%s %u\n", names[11], (unsigned int)s);
-    gl_log("-----------------------------\n");
+    printf("%s %u\n", names[11], (unsigned int)s);
+    printf("-----------------------------\n");
 }
 
-char restart_gl_log() {
-    FILE * fp = fopen(GL_LOG_FILE, "w");
-    if (!fp) {
-        fprintf(stderr, "ERROR can't write to log file\n");
-        return 0; /* failed */
-    }
-    time_t now = time(NULL);
-    char * date = ctime(&now);
-    fprintf(fp, "GL_LOG_FILE log. local time %s\n", date);
-    fclose(fp);
-    return 1; /* success*/
-}
-
-
-/* read a file and make const char * result point to a null-terminated string
- * containing the file, or just NULL if something went wrong */
-/* TODO needs to be better */
+/* read a file and return a null-terminated string containing the file, or just
+ * NULL if something went wrong */
 char * read_file(const char * const filename) {
     char * buffer = NULL;
     size_t length;
@@ -131,21 +92,23 @@ char * read_file(const char * const filename) {
     return buffer;
 }
 
-
 void glfw_error_callback(int error, const char * description) {
-    gl_log("GLFW (ERROR): code %i msg: %s\n", error, description);
+    printf("GLFW (ERROR): code %i msg: %s\n", error, description);
 }
 
+void glfw_window_size_callback(GLFWwindow * window, int width, int height) {
+    g_gl_width = width;
+    g_gl_height = height;
+    /* update perspective matrices here apparently */
+}
 
 int main() {
-    assert(restart_gl_log());
     /* make gl context and window with glfw */
-    gl_log("GLFW: starting GLFW version %s\n", glfwGetVersionString());
-
+    printf("GLFW: starting GLFW version %s\n", glfwGetVersionString());
     glfwSetErrorCallback(glfw_error_callback);
 
     if (!glfwInit()) {
-        gl_log("GLFW (ERROR): can't init glfw oops\n");
+        printf("GLFW (ERROR): can't init glfw oops\n");
         return 1;
     }
 
@@ -157,21 +120,18 @@ int main() {
     /* antialiasing apparently */
     glfwWindowHint(GLFW_SAMPLES, 4);
 
-    /* monitor info */
     GLFWmonitor * mon = glfwGetPrimaryMonitor();
-    const GLFWvidmode * vmode = glfwGetVideoMode(mon);
-    /* create window */
-    // GLFWwindow * window = glfwCreateWindow(vmode->width, vmode->height,
-    //         "trongle", mon, NULL);
+    // const GLFWvidmode * vmode = glfwGetVideoMode(mon);
+    /* create window (windowed mode, not fullscreen) */
     GLFWwindow * window = glfwCreateWindow(640, 480, "trongle", NULL, NULL);
     if (!window) {
-        gl_log("GLFW (ERROR): can't create window\n");
+        printf("GLFW (ERROR): can't create window\n");
         glfwTerminate();
         return 1;
     }
 
     glfwMakeContextCurrent(window);
-    log_gl_params(); /* needs a context */
+    log_gl_params();
     glfwSetWindowSizeCallback(window, glfw_window_size_callback);
 
     /* start glew extension handler */
@@ -179,14 +139,14 @@ int main() {
     glewInit();
 
     /* get version info */
-    const GLubyte* renderer = glGetString(GL_RENDERER); // get renderer string
-    const GLubyte* version = glGetString(GL_VERSION); // version as a string
+    const GLubyte* renderer = glGetString(GL_RENDERER);
+    const GLubyte* version = glGetString(GL_VERSION);
     printf("Renderer: %s\n", renderer);
     printf("OpenGL version supported %s\n", version);
 
-    // tell GL to only draw onto a pixel if the shape is closer to the viewer
-    glEnable(GL_DEPTH_TEST); // enable depth-testing
-    // depth-testing interprets a smaller value as "closer"
+    /* tell GL to only draw onto a pixel if the shape is closer to the viewer */
+    glEnable(GL_DEPTH_TEST);
+    /* depth-testing interprets a smaller value as "closer" */
     glDepthFunc(GL_LESS);
 
     /* do a triangle */
