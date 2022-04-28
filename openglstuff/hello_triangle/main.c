@@ -7,9 +7,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <time.h>
-#include <assert.h>
-
-#define GL_LOG_FILE "gl.log"
 
 
 /* to be written only by glfw_window_size_callback() */
@@ -120,7 +117,7 @@ int main() {
     /* antialiasing apparently */
     glfwWindowHint(GLFW_SAMPLES, 4);
 
-    GLFWmonitor * mon = glfwGetPrimaryMonitor();
+    // GLFWmonitor * mon = glfwGetPrimaryMonitor();
     // const GLFWvidmode * vmode = glfwGetVideoMode(mon);
     /* create window (windowed mode) */
     GLFWwindow * window = glfwCreateWindow(640, 480, "trongle", NULL, NULL);
@@ -169,11 +166,11 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
-    /* using version 300 of glsl for my lil guy laptop, not sure how to choose
+    /* using version 330 of glsl for my lil guy laptop, not sure how to choose
      * versions in general */
-    const char * vertex_shader = read_file("triangle.vs.glsl");
+    unsigned char const * vertex_shader = read_file("triangle.vs.glsl");
     if (vertex_shader == NULL) return 1;
-    const char * fragment_shader = read_file("triangle.fs.glsl");
+    unsigned char const * fragment_shader = read_file("triangle.fs.glsl");
     if (fragment_shader == NULL) return 1;
 
     GLuint vs = glCreateShader(GL_VERTEX_SHADER);

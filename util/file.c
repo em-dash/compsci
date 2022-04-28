@@ -1,4 +1,5 @@
 #include "file.h"
+#include <stdlib.h>
 
 /* returns NULL-terminated string of the file contents */
 /* memory allocated to the returned pointer is responsibility of the caller */
@@ -6,7 +7,7 @@ unsigned char * get_file(const char * filename) {
     unsigned char * buffer;
     size_t len;
 
-    file = fopen(filename, "r");
+    FILE * file = fopen(filename, "r");
     if (!file) {
         return NULL;
     }
