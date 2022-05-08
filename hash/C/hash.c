@@ -60,7 +60,7 @@ int main(int argc, char * argv[]) {
         return 1;
     }
 
-    file = fopen(argv[1], "rb");
+    file = fopen(argv[1], "r");
     if (!file) {
         fprintf(stderr, "can't open file\n");
         return 2;
