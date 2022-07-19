@@ -1,0 +1,37 @@
+
+C bitwise operator precedence:
+
+2   ~   Bitwise NOT (and other stuff)
+...
+8 	& 	Bitwise AND
+9 	^ 	Bitwise XOR (exclusive or)
+10 	| 	Bitwise OR (inclusive or)
+
+
+C bitshift with wrapping:
+
+n >> f for 32-bit unsigned integers
+(n >> f) | (n << (32 - f))
+n << f for 32-bit unsigned integers
+(n << f) | (n >> (32 - f))
+
+
+auxiliary bitwise functions:
+
+F(X,Y,Z) = XY v not(X) Z
+G(X,Y,Z) = XZ v Y not(Z)
+H(X,Y,Z) = X xor Y xor Z
+I(X,Y,Z) = Y xor (X v not(Z))
+
+
+with C bitwise operators (less terrible):
+
+F(X, Y, Z) = X & Y | ~X & Z
+G(X, Y, Z) = X & Z | Y & ~Z
+H(X, Y, Z) = X ^ Y ^ Z
+I(X, Y, Z) = Y ^ (X | ~Z)
+
+buffer[i * 64]
+*(buffer + i * 64)
+
+
